@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Anant Bhardwaj: CS undergrad at IIIT Manipur building ML, GenAI, full-stack and 3D web projects. Explore it like a terminal.">
+<meta name="theme-color" content="#000000">
+<title>Anant Bhardwaj | Terminal Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#000;--fg:#e6dfcf;--dim:#8a8372;--amb:#ffb000;--red:#ff5a36;--line:#2a2418;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#000}}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 "JetBrains Mono",ui-monospace,Menlo,Consolas,monospace}
+canvas#bg{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+#term{position:relative;z-index:1;height:100%;max-width:980px;margin:0 auto;padding:20px 18px;overflow-y:auto}
+#term::-webkit-scrollbar{width:6px}#term::-webkit-scrollbar-thumb{background:var(--line)}
+.ln{white-space:pre-wrap;word-break:break-word;margin:0}
+a{color:var(--amb)}.about{display:flex;gap:26px;align-items:center;flex-wrap:wrap;margin:10px 0}.nf{flex-wrap:nowrap;gap:18px}.nf .art{font-size:clamp(6px,2.2vw,11px)}.about>.ln{flex:1 1 300px;min-width:260px}.art{white-space:pre;margin:0;flex:0 0 auto;max-width:100%;overflow:hidden;font-size:clamp(5px,1.55vw,9px);line-height:1.08;color:var(--amb)}.dim{color:var(--dim)}.amb{color:var(--amb)}.err{color:var(--red)}.b{font-weight:700}
+.dir{color:var(--amb);font-weight:700}
+.row{display:flex;gap:.6ch;align-items:baseline}
+.ps{color:var(--amb);white-space:nowrap;font-weight:700}
+#in{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--fg);font:inherit;caret-color:var(--amb)}
+.chip{display:inline-block;margin:2px 8px 2px 0;padding:0 6px;border:1px solid var(--line);color:var(--amb);cursor:pointer;background:none;font:inherit}
+.chip:hover,.chip:focus-visible{border-color:var(--amb);outline:0}
+#ov{position:fixed;inset:0;z-index:5;background:rgba(0,0,0,.94);display:none;overflow-y:auto;padding:calc(24px + env(safe-area-inset-top,0px)) 18px 40px}
+#ov.on{display:block}
+#ov .in{max-width:860px;margin:0 auto}
+#ov h1{font-size:clamp(28px,6vw,52px);line-height:1.05;margin:.2em 0 .1em;color:var(--amb);letter-spacing:-.02em}
+#ov h2{font-size:16px;margin:28px 0 8px;color:var(--amb);border-bottom:1px solid var(--line);padding-bottom:6px}
+#ov p,#ov li{max-width:72ch}
+#ov ul{padding-left:18px;margin:6px 0}
+.proj{border-left:2px solid var(--amb);padding:2px 0 2px 12px;margin:14px 0}
+.proj b{color:var(--fg)}.tags{color:var(--dim);font-size:13px}
+#x{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:14px;z-index:6;display:none}
+#ov.on ~ #x{display:block}
+@media (max-width:600px){.nf{flex-wrap:wrap}html,body{font-size:13.5px}}
+@media (prefers-reduced-motion:no-preference){.blink{animation:bl 1.1s steps(1) infinite}@keyframes bl{50%{opacity:0}}}
+</style>
+</head>
+<body>
+<canvas id="bg" aria-hidden="true"></canvas>
+<main id="term" aria-label="Terminal" tabindex="-1">
+  <div id="out" aria-live="polite"></div>
+  <div class="row"><span class="ps" id="ps"></span><input id="in" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Terminal input" autofocus></div>
+</main>
+<div id="ov" role="dialog" aria-label="Graphical view"><div class="in" id="gui"></div></div>
+<button class="chip" id="x" onclick="gui(false)">close (esc)</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const ART=`  █████╗ ██████╗
+ ██╔══██╗██╔══██╗
+ ███████║██████╔╝
+ ██╔══██║██╔══██╗
+ ██║  ██║██████╔╝
+ ╚═╝  ╚═╝╚═════╝`;
+const MINI=`              ;
+        :;:;:,,,....,:
+      .....,,,,,,,,....,
+    ,....................,
+   :......,:;;;;;:,.......,
+  ;...,::;=+###*++-;,......
+  ..,,:-+#@@#####=;:,,,....:
+  ...;*#*+=--**;,.....,::...
+  ..,**,.....=*:......,.,:..
+  ,.:*=......#%*:....,...;.,;
+   .,-++;,,;*#+=...;##*-,==,,;
+    ,:*@@@@@@*---,,;=+=:.;#:.=
+   =##+*%@@#---=--;:;-:..,#,;+
+    %#*=+#%*-=#+-;===;,..-#-
+     #@+=***##%%%%#+-,..-*#
+        =;--+**+=-;,...:;,-
+        +*:,.,............,*
+         *++=----;:,.......*  ::
+         @*%%#*%%##=,......-=,:.`;
+const PORT=`                         -;::::::::;::
+                    ;;;:;,.,,,,,.........,:
+                :.,;:;::;:::..,::,,..........:
+             ,....,,,,:;=:.,,:-;:::............,
+           ,..........,,.,,:...,,,,,,:,..........:
+          :......................................,,,
+         .........................................,..:
+        ,.............,,:.............................
+       ,..............,.,;;-------;;:,,,............,..
+      ..........,,,::;-=+++++++++++++-::,..............
+     ,......,..,:;,:-==+*######**++++=-;:,,............,
+     ......,,;;=;,:;=******#######*++=--::,.............:
+    ;....,,;,;:;--=*%@@%%###*###%%#*+-;;;:;:,,,..........
+    ,....:,,.:;+#%@@@@@@@%@#####*==;:........,,:,........
+    ......,-=+#%%%%%#**+=-==##=-;,,...........:;,;:,.....
+    ......,=#%##=;,......,:-%%+;.,.............:,;;;,....
+    .....,-*%#=,..........:;+*=:.,.............;..:::....
+    .....:*##+.............:*##=::............:,...--....
+     ...,:+##;.............*#%##+;,.........,,.....:;:...;=
+     ..,,;==%=............;@%@@%*;,:,..,:,,,,,,,,,..:-..,;.,=
+      ..,:-+*--,........,;#@%%%*=,..,,,;=*###*++=;,,=#=;-.,.,*
+       .,,,-=#@@#=;,,,:-+@%#:.--,......,;=#%%#*+-,,,=%+:..::.=
+       ,..,:*#%@@@@@%@@@@@@+-=++=+:...,-+#%%##+-;,,,;*%;-:.::+
+        ...,+*#@@@@@@@@@@@@%*--:,;--::,,:;-=++=;,...,+%-,...-*
+       +##%-=+*%@@@@@@@@%#+--=++==:,,,::,:-:,;;,....,+@;:,-:+
+       --%%#=++*#%%@@@@%=:;-+;:;;;;----;,,;+=;:......=%-::;-#
+       *+%@#+=+=+*##%@%*;;-;,-*##*+=====---==-;.....:+%-.,;*
+       *#%%*#*=+=+*##@@#=-;=*##*-:,:;;=+++==:,....,;;*%%
+        *#%#@%===++*#%%%**%%#%#***+++**+===-;:....,-**#%
+          ##%@%=-=*#+########%@@%@@@%%#*+=-:,....,-##+*@
+           %@@#-;====++++##*#%@@@@%##*+=-;:.....,;**=-*%
+                 =;;--=-=**#***+===---;;:,.....,-==;,.;**
+                 *+:,,,:;;;---;;:;:,,,.......,,:......,+#
+                 +%*-:,.....,...,....................,,-%
+                  %#+--;,,,,.........................,.:#
+                  *#==+==;:;;-;;:,,,,..................,**
+                  -#+++*#**+==+*+*#**=--;;,............,+#+  :,:,,
+                  %%#+*%%@@#***#%@###***-;,...,........,;=%:::,,,,
+                  @@%##%@%##***%%%%%%%#+-,.......,,,...,-++,.:-:,.`;
+const D={
+name:"Anant Bhardwaj",
+L:{github:"https://github.com/Mobx01",kaggle:"https://www.kaggle.com/mobx01",leetcode:"https://leetcode.com/u/anantbhardwaj0/",linkedin:"https://www.linkedin.com/in/anant-bhardwaj-390b86312"},
+about:`Anant Bhardwaj
+B.Tech, Computer Science & Technology at IIIT Manipur (CGPA 8.68/10, 2024 to 2028).
+
+I build full-stack apps, computer vision pipelines, GenAI systems, physics simulations and 3D web experiences. I also practise competitive programming: 451+ problems on LeetCode (max rating 1510) and 102+ on Codeforces.
+
+Always learning by building, experimenting, and optimizing systems.
+
+Try: ls, cd projects, cat learning-path-generator.txt, goals, neofetch`,
+education:`IIIT Manipur, Imphal, India
+B.Tech, Computer Science & Technology
+CGPA 8.68/10 | Aug 2024 - May 2028
+Competitive programming and technical project development.`,
+skills:`Languages     C, C++, Python, JavaScript, HTML, CSS, SQL
+Databases     PostgreSQL, MySQL, Redis
+Frameworks    Next.js, React.js, FastAPI, Flutter, Three.js, GSAP, Raylib
+Tools         Git, Linux
+Data & ML     Scikit-Learn, XGBoost, NumPy, Pandas, Matplotlib, Seaborn,
+              Feature Engineering, EDA, Computer Vision, NLP
+Core areas    DSA, OOP, DBMS, OS, Time Complexity Analysis, System Optimization
+Platforms     LeetCode, Codeforces, Kaggle`,
+goals:`Short-term   Master core CS, DSA, and ML fundamentals.
+Long-term    High-impact software engineering, R&D, or deep-tech roles
+             focused on scalable systems and artificial intelligence.`,
+contact:`email      anantxbth@gmail.com
+github     https://github.com/Mobx01
+linkedin   https://www.linkedin.com/in/anant-bhardwaj-390b86312
+leetcode   https://leetcode.com/u/anantbhardwaj0/
+kaggle     https://www.kaggle.com/mobx01
+
+Tip: 'open github' launches a profile in a new tab.`,
+ach:`LeetCode     451+ solved, max rating 1510 (hash tables, DP, binary search, greedy)
+Codeforces   102+ solved (data structures, number theory, implementation)
+Kaggle       Data science and ML notebooks (kaggle.com/mobx01)
+Hackathons   Finalist, Pathway x IIT Ropar GenAI Hackathon
+Community    Mentor peers in programming; contribute to open-source codebases.`,
+hack:`Pathway x IIT Ropar GenAI Hackathon | Finalist
+  AI-Driven Warehouse Management: a RAG system for warehouse queries.
+
+Ethos 2025, IIT Guwahati | Participant
+  Built scalable software under tight deadlines with agile, rapid prototyping.
+
+GDG on Campus Solution Challenge 2025
+  Event-driven route optimization system (see projects/route-optimizer.txt).`,
+P:{
+"learning-path-generator":["AI Learning Path Generator","Full-Stack Web App | Next.js, Python, FastAPI, PostgreSQL, Redis, Gemini, React Flow",["Next.js and FastAPI app using the Gemini API to generate structured learning roadmaps as directed acyclic graphs, with an interactive React Flow UI, milestones and progress tracking.","Backend data pipeline: Redis for caching and PostgreSQL for permanent storage, which cuts API cost and improves performance."]],
+"warehouse-rag":["AI-Driven Warehouse Management (RAG System)","Finalist, Pathway x IIT Ropar GenAI Hackathon",["Retrieval-augmented generation system that optimizes warehouse queries and operational workflows using GenAI."]],
+"rocket-simulator":["Rocket Simulator","C++ Physics Simulation | C++, Raylib, OOP",["Physics-based simulator implementing aerodynamic and astrodynamic equations to model trajectory and propulsion.","Object-oriented design for system state and simulation data, tuned for continuous real-time physics calculation."]],
+"route-optimizer":["Event-Driven Route Optimization System","GDG on Campus Solution Challenge 2025",["Event-driven system that models, optimizes and solves complex real-world logistics routing problems using core software engineering fundamentals."]],
+"wrong-direction-vehicle-detection":["Wrong Direction Vehicle Detection","Python, Computer Vision, Data Pipelines",["Computer vision pipeline that detects and tracks vehicles travelling the wrong way.","Detection, tracking and direction-evaluation modules for dynamic video feeds, plus a dashboard that visualizes the pipeline and outputs processed videos."]],
+"ahouba":["Ahouba.com (Official Techfest Website)","IIIT Manipur Annual Techfest | React.js, Three.js, GSAP, Blender",["Team project: a fully functional 2D + 3D interactive site with GSAP animations and Blender-optimized Three.js models, with basic physics and character controls for a game-like feel."]],
+"space-game":["2D Space Game (Web-Based)","JavaScript, HTML5 Canvas, CSS",["Space dodge game with real-time collision detection, object-oriented entity management, and an optimized render pipeline holding 60 FPS."]],
+"portfolio":["Personal Portfolio Website","HTML, CSS, JavaScript, Responsive Design",["Mobile-first portfolio with clean UI/UX, deployed through a CI/CD pipeline with automated builds via Git and Netlify."]]
+}};
+const txt=p=>`${p[0]}\n[${p[1]}]\n\n`+p[2].map(s=>"- "+s).join("\n");
+const mk=(c,art)=>({t:"f",c,art});
+const FS={t:"d",c:{
+"about.txt":mk(D.about,PORT),"education.txt":mk(D.education),"skills.txt":mk(D.skills),
+"contact.txt":mk(D.contact),"goals.txt":mk(D.goals),"achievements.txt":mk(D.ach),
+"projects":{t:"d",c:Object.fromEntries(Object.entries(D.P).map(([k,v])=>[k+".txt",mk(txt(v))]))},
+"experience":{t:"d",c:{"hackathons.txt":mk(D.hack)}}}};
+let cwd=[];const out=document.getElementById("out"),inp=document.getElementById("in"),ps=document.getElementById("ps"),term=document.getElementById("term");
+const hist=[];let hi=0;
+function node(path,base=cwd){let n=FS,parts=path.startsWith("~")||path.startsWith("/")?[]:[...base];
+ for(const s of path.replace(/^~/,"").split("/")){if(!s||s===".")continue;if(s==="..")parts.pop();else parts.push(s)}
+ for(const s of parts){if(!n||n.t!=="d"||!n.c[s])return null;n=n.c[s]}return {n,parts}}
+const here=()=>node("",cwd).n;
+const pwd=()=>"~"+(cwd.length?"/"+cwd.join("/"):"");
+function setPs(){ps.textContent="anant@iiitm:"+pwd()+"$"}
+function print(s,cls="",html){const d=document.createElement("div");d.className="ln "+cls;if(html)d.append(...html);else if(/https?:\/\//.test(s)){s.split(/(https?:\/\/\S+)/).forEach(q=>{if(/^https?:/.test(q)){const a=document.createElement("a");a.href=q;a.target="_blank";a.rel="noopener";a.textContent=q;d.append(a)}else d.append(q)})}else d.textContent=s;out.append(d);term.scrollTop=term.scrollHeight;return d}
+function chips(list){const d=document.createElement("div");d.className="ln";list.forEach(c=>{const b=document.createElement("button");b.className="chip";b.textContent=c;b.onclick=()=>{inp.value=c;run(c)};d.append(b)});out.append(d)}
+const CMDS={
+help(){print(`Commands:
+  ls [path]     list files          cd <dir>      change directory
+  cat <file>    read a file         pwd           print location
+  neofetch      system summary      whoami        who am I
+  skills        shortcut to skills  projects      list projects
+  contact/links  how to reach me    gui           graphical view
+  goals         what I'm aiming for  open <site>  github|linkedin|leetcode|kaggle
+  history       past commands       clear         clear screen
+  repos / git log   live GitHub activity
+  roadmap       skills graph        launch       rocket sim demo
+  play space-game  mini game       theme <name> amber|phosphor|ember|paper
+  resume  mail  mood  sound on|off  matrix  fortune  cowsay  sudo hire-me
+Tab completes names. Up/Down arrows recall commands.`)},
+ls(a){const r=node(a[0]||"");if(!r)return err("ls: "+a[0]+": no such file or directory");
+ if(r.n.t==="f")return print(a[0]);const d=document.createElement("div");d.className="ln";
+ Object.entries(r.n.c).forEach(([k,v])=>{const s=document.createElement("span");s.textContent=k+(v.t==="d"?"/":"");s.className=v.t==="d"?"dir":"";s.style.marginRight="2ch";d.append(s)});out.append(d)},
+cd(a){if(!a[0]){cwd=[];return setPs()}const r=node(a[0]);if(!r)return err("cd: "+a[0]+": no such directory");
+ if(r.n.t!=="d")return err("cd: "+a[0]+": not a directory");cwd=r.parts;setPs()},
+cat(a){if(!a[0])return err("cat: missing file name");const r=node(a[0])||node(a[0]+".txt");
+ if(!r)return err("cat: "+a[0]+": no such file");if(r.n.t==="d")return err("cat: "+a[0]+": is a directory");if(r.n.art){const w=document.createElement("div");w.className="about";const k=document.createElement("pre");k.className="art";k.textContent=r.n.art;const t=document.createElement("div");t.className="ln";t.textContent=r.n.c;w.append(k,t);out.append(w);term.scrollTop=term.scrollHeight}else print(r.n.c)},
+pwd(){print(pwd())},
+whoami(){print(D.name+" | CS undergrad | ML, systems and the web")},
+skills(){print(FS.c["skills.txt"].c)},projects(){CMDS.ls(["projects"])},contact(){print(D.contact)},
+clear(){out.innerHTML=""},history(){hist.forEach((h,i)=>print(String(i+1).padStart(3)+"  "+h))},
+gui(){gui(true)},links(){print(D.contact)},goals(){print(D.goals)},
+open(a){const u=D.L[a[0]];if(!u)return err("open: usage: open github|linkedin|leetcode|kaggle");window.open(u,"_blank","noopener");print("opening "+u)},
+neofetch(){const A=MINI.split("\n"),I=["anant@iiitm","---------------","OS       portfolio-sh 1.0","School   IIIT Manipur (B.Tech CST)","CGPA     8.68 / 10","Langs    C/C++, Python, JS, SQL","Focus    ML, GenAI, full-stack, 3D web","LeetCode 451+ solved (max 1510)","Kaggle   kaggle.com/mobx01","Shell    in-browser, frustration monitor"],off=Math.max(0,Math.floor((A.length-I.length)/2));
+ const w=document.createElement("div");w.className="about nf";const k=document.createElement("pre");k.className="art";k.textContent=MINI;const t=document.createElement("div");t.className="ln amb";t.textContent=I.join("\n");w.append(k,t);out.append(w);term.scrollTop=term.scrollHeight}};
+CMDS.ls.aliases=1;
+function err(s){print(s,"err");B.err++;B.streak++}
+function run(raw){const line=raw.trim();print("",""," ".length?[Object.assign(document.createElement("span"),{className:"ps",textContent:ps.textContent+" "}),document.createTextNode(line)]:0);
+ if(!line)return;hist.push(line);hi=hist.length;const [c,...a]=line.split(/\s+/);
+ if(Object.hasOwn(CMDS,c)){const before=B.streak;CMDS[c](a);if(B.streak===before)B.streak=0}
+ else{print(c+": command not found. Type 'help'.","err");B.err++;B.streak++}
+ judge();term.scrollTop=term.scrollHeight}
+
+/* --- Behaviour tracker + frustration model (in-browser, no network) --- */
+const B={keys:[],err:0,streak:0,fired:false,last:0};
+function track(e){const t=performance.now();B.keys.push({k:e.key==="Backspace"?"b":"c",t});if(B.keys.length>40)B.keys.shift();B.last=t}
+function features(){const k=B.keys,n=k.length||1,bs=k.filter(x=>x.k==="b").length/n;
+ let fast=0;for(let i=1;i<k.length;i++)if(k[i].t-k[i-1].t<70)fast++;
+ return {bs,fast:fast/n,streak:B.streak,total:B.err}}
+function score(){const f=features();const z=-3.2+1.1*f.streak+5*f.bs+1.5*f.fast+0.25*f.total;return 1/(1+Math.exp(-z))}
+function judge(){if(B.fired)return;if(score()>0.85){B.fired=true;
+ print("System detects navigation difficulties. Launching graphical interface...","amb b");setTimeout(()=>gui(true),1400)}}
+
+/* --- GUI fallback --- */
+function gui(on){const o=document.getElementById("ov");if(!on){o.classList.remove("on");inp.focus();return}
+ const g=document.getElementById("gui");
+ const li=a=>"<ul>"+a.map(x=>"<li>"+x+"</li>").join("")+"</ul>";
+ g.innerHTML=`<h1>${D.name}</h1><p>B.Tech CST at IIIT Manipur, CGPA 8.68. I build ML pipelines, full-stack apps, simulations and 3D web experiences.</p>
+ <p class="dim">anantxbth@gmail.com | ${Object.entries(D.L).map(([k,u])=>`<a href="${u}" target="_blank" rel="noopener">${k}</a>`).join(" | ")}</p>
+ <h2>Projects</h2>`+Object.values(D.P).map(p=>`<div class="proj"><b>${p[0]}</b><div class="tags">${p[1]}</div>${li(p[2])}</div>`).join("")+
+ `<h2>Goals</h2><pre class="ln">${D.goals}</pre><h2>Skills</h2><pre class="ln">${FS.c["skills.txt"].c}</pre><h2>Competitive programming</h2><pre class="ln">${D.ach}</pre><h2>Hackathons</h2><pre class="ln">${D.hack}</pre>`;
+ o.classList.add("on");o.scrollTop=0;setTimeout(()=>document.getElementById("x").focus(),150)}
+
+/* --- input --- */
+function complete(){const v=inp.value,sp=v.lastIndexOf(" ");const first=sp<0,w=v.slice(sp+1);
+ let pool;if(first)pool=Object.keys(CMDS);else{const sl=w.lastIndexOf("/"),dp=sl<0?"":w.slice(0,sl+1);const r=node(dp||"");if(!r||r.n.t!=="d")return;
+  pool=Object.entries(r.n.c).map(([k,x])=>dp+k+(x.t==="d"?"/":""))}
+ const m=pool.filter(p=>p.startsWith(w));if(m.length===1)inp.value=v.slice(0,sp+1)+m[0]+(m[0].endsWith("/")?"":" ");
+ else if(m.length>1){print(ps.textContent+" "+v,"dim");print(m.join("  "));let p=m[0];for(const s of m)while(!s.startsWith(p))p=p.slice(0,-1);inp.value=v.slice(0,sp+1)+p}}
+inp.addEventListener("keydown",e=>{track(e);
+ if(e.key==="Enter"){e.preventDefault();const v=inp.value;inp.value="";run(v)}
+ else if(e.key==="Tab"){e.preventDefault();complete()}
+ else if(e.key==="ArrowUp"){e.preventDefault();if(hi>0)inp.value=hist[--hi]}
+ else if(e.key==="ArrowDown"){e.preventDefault();inp.value=++hi<hist.length?hist[hi]:(hi=hist.length,"")}
+ else if(e.key==="l"&&e.ctrlKey){e.preventDefault();CMDS.clear()}});
+addEventListener("keydown",e=>{if(e.key==="Escape")gui(false)});
+term.addEventListener("click",()=>{if(!getSelection().toString())inp.focus()});
+
+/* --- 3D background: Three.js amber point field + wireframe --- */
+(function(){if(!window.THREE)return;const c=document.getElementById("bg"),T=THREE;
+ const r=new T.WebGLRenderer({canvas:c,alpha:true,antialias:true});r.setPixelRatio(Math.min(devicePixelRatio,2));
+ const sc=new T.Scene(),cam=new T.PerspectiveCamera(55,1,.1,50);cam.position.z=7;
+ const n=900,pos=new Float32Array(n*3);for(let i=0;i<n;i++){const u=Math.random()*6.283,v=Math.acos(2*Math.random()-1),d=3+Math.random()*5;pos.set([d*Math.sin(v)*Math.cos(u),d*Math.sin(v)*Math.sin(u),d*Math.cos(v)],i*3)}
+ const g=new T.BufferGeometry();g.setAttribute("position",new T.BufferAttribute(pos,3));
+ const pts=new T.Points(g,new T.PointsMaterial({color:0xffb000,size:.035,transparent:true,opacity:.55}));
+ const wf=new T.LineSegments(new T.EdgesGeometry(new T.IcosahedronGeometry(2.4,1)),new T.LineBasicMaterial({color:0xffb000,transparent:true,opacity:.16}));
+ sc.add(pts,wf);window.setBgColor=c=>{pts.material.color.set(c);wf.material.color.set(c)};let mx=0,my=0;addEventListener("pointermove",e=>{mx=e.clientX/innerWidth-.5;my=e.clientY/innerHeight-.5});
+ const rm=matchMedia("(prefers-reduced-motion:reduce)").matches;
+ function fit(){r.setSize(innerWidth,innerHeight,false);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();r.render(sc,cam)}
+ function loop(t){pts.rotation.y=t/60000+mx*.3;pts.rotation.x=my*.2;wf.rotation.y=-t/30000;wf.rotation.x=t/45000;r.render(sc,cam);requestAnimationFrame(loop)}
+ addEventListener("resize",fit);fit();if(!rm)requestAnimationFrame(loop)})();
+
+/* ===== v3 extensions ===== */
+const MLP={"W1": [[-0.627, -0.709, -1.418, 0.564, 0.574, -1.111], [-0.1, -0.566, -0.662, 0.283, 0.329, -0.08], [-1.543, -1.116, -1.099, 1.536, 1.422, -0.915], [-0.171, -0.737, -0.106, 0.572, 0.333, -0.223]], "b1": [1.482, 1.964, -1.105, -1.856, -1.61, 1.569], "W2": [-1.711, -1.463, 0.787, 1.159, 1.551, -1.653], "b2": 0.096};
+function mlp(x){const h=MLP.b1.map((b,j)=>Math.tanh(b+x.reduce((s,v,i)=>s+v*MLP.W1[i][j],0)));return 1/(1+Math.exp(-(MLP.b2+h.reduce((s,v,j)=>s+v*MLP.W2[j],0))))}
+score=function(){const f=features();return mlp([f.bs*4,f.fast*2,f.streak/3,f.total/6])};
+const a$=(t,h,dl)=>{const a=document.createElement("a");a.href=h;a.textContent=t;a.target="_blank";a.rel="noopener";if(dl)a.setAttribute("download","");return a};
+const txtn=s=>document.createTextNode(s);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let sfx=false,actx;
+function blip(){if(!sfx)return;try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();const o=actx.createOscillator(),g=actx.createGain();o.type="square";o.frequency.value=900+Math.random()*300;g.gain.value=.015;o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+.018)}catch(e){}}
+inp.addEventListener("keydown",blip);
+const THEMES={amber:"#ffb000",phosphor:"#5dff8f",ember:"#ff5a36",paper:"#f2efe6"};
+function setTheme(n){const c=THEMES[n];if(!c)return false;document.documentElement.style.setProperty("--amb",c);window.setBgColor&&window.setBgColor(c);try{localStorage.setItem("th",n)}catch(e){}return true}
+try{const t=localStorage.getItem("th");if(t)setTheme(t)}catch(e){}
+const FORT=["Premature optimization is the root of most weekend bugs.","It works on my machine is a deployment strategy, apparently.","A watched build never compiles.","Off-by-one errors: the two hardest problems in computer science are naming, cache invalidation, and off-by-one errors.","Greedy works until it doesn't. Then you reach for DP.","Every great model starts as a notebook nobody wants to look at."];
+function overlayCanvas(z){const c=document.createElement("canvas");c.width=innerWidth;c.height=innerHeight;c.style.cssText="position:fixed;inset:0;z-index:"+z+";background:#000";document.body.append(c);return c}
+let stopper=null;addEventListener("keydown",e=>{if(e.key==="Escape"&&stopper){stopper();stopper=null}});
+function matrix(){const c=overlayCanvas(7),x=c.getContext("2d"),cols=Math.floor(c.width/16),y=Array(cols).fill(0).map(()=>Math.random()*-40);const ch="01<>/{}[]=+*#ABCDEFXYZ";
+ const col=getComputedStyle(document.documentElement).getPropertyValue("--amb");let on=true;const end=()=>{on=false;c.remove()};stopper=end;c.onclick=end;setTimeout(()=>on&&end(),6000);
+ (function f(){if(!on)return;x.fillStyle="rgba(0,0,0,.08)";x.fillRect(0,0,c.width,c.height);x.fillStyle=col;x.font="15px monospace";y.forEach((v,i)=>{x.fillText(ch[Math.random()*ch.length|0],i*16,v*16);y[i]=v*16>c.height&&Math.random()>.975?0:v+1});requestAnimationFrame(f)})()}
+function game(){const c=overlayCanvas(8),x=c.getContext("2d"),col=getComputedStyle(document.documentElement).getPropertyValue("--amb");let on=true,P,R,sc,dead,L,keys={},t0;
+ const reset=()=>{P={x:c.width/2,y:c.height-60,w:26};R=[];sc=0;dead=false;t0=performance.now()};reset();
+ const end=()=>{on=false;c.remove();removeEventListener("keydown",kd);removeEventListener("keyup",ku)};stopper=end;
+ const kd=e=>{keys[e.key]=1;if(dead&&(e.key==="Enter"||e.key===" "))reset();if(e.key.startsWith("Arrow")||e.key===" ")e.preventDefault()},ku=e=>delete keys[e.key];addEventListener("keydown",kd);addEventListener("keyup",ku);
+ c.addEventListener("pointermove",e=>{P.x=e.clientX});c.addEventListener("pointerdown",e=>{if(dead)reset();P.x=e.clientX});
+ (function f(now){if(!on)return;x.fillStyle="#000";x.fillRect(0,0,c.width,c.height);
+  if(!dead){const lvl=1+sc/600;if(keys.ArrowLeft||keys.a)P.x-=7;if(keys.ArrowRight||keys.d)P.x+=7;P.x=Math.max(20,Math.min(c.width-20,P.x));
+   if(Math.random()<.04*lvl+.02)R.push({x:Math.random()*c.width,y:-20,r:8+Math.random()*18,v:2+Math.random()*2.5*lvl});
+   R.forEach(o=>{o.y+=o.v;if(Math.hypot(o.x-P.x,o.y-P.y)<o.r+10)dead=true});R=R.filter(o=>o.y<c.height+40);sc=Math.floor((now-t0)/50)}
+  x.strokeStyle=x.fillStyle=col;R.forEach(o=>{x.beginPath();x.arc(o.x,o.y,o.r,0,6.3);x.stroke()});
+  x.beginPath();x.moveTo(P.x,P.y-16);x.lineTo(P.x+13,P.y+12);x.lineTo(P.x-13,P.y+12);x.closePath();x.fill();
+  x.font="16px monospace";x.fillText("SCORE "+sc+"   (arrows / A D / drag, Esc to quit)",16,28);
+  if(dead){x.font="28px monospace";x.fillText("GAME OVER  "+sc,c.width/2-120,c.height/2);x.font="15px monospace";x.fillText("Enter / tap to retry",c.width/2-80,c.height/2+30)}
+  requestAnimationFrame(f)})(performance.now())}
+function launch(){const c=document.createElement("canvas");c.width=680;c.height=250;c.style.cssText="max-width:100%;border:1px solid var(--line);margin:6px 0";const tel=print("","dim");out.append(c);const x=c.getContext("2d"),col=getComputedStyle(document.documentElement).getPropertyValue("--amb");
+ let px=0,py=0,vx=0,vy=0,m=1,t=0,dt=.1,pts=[],log=[];while(py>=0&&t<80){const th=Math.PI/2-Math.min(1.25,t*.1)*(t>1?1:0),on=t<9,a=on?26/m:0;vx+=a*Math.cos(th)*dt;vy+=(a*Math.sin(th)-9.8)*dt;if(t<1)vy=Math.max(vy,0);px+=vx*dt;py+=vy*dt;if(on)m=Math.max(.45,m-.012);t+=dt;pts.push([px,py,Math.hypot(vx,vy),t]);if(py<0)break}
+ const mx=Math.max(...pts.map(p=>p[0])),my=Math.max(...pts.map(p=>p[1])),X=p=>30+p/mx*(c.width-60),Y=p=>c.height-24-p/my*(c.height-60);let i=0;
+ (function f(){x.fillStyle="#000";x.fillRect(0,0,c.width,c.height);x.strokeStyle="#2a2418";x.beginPath();x.moveTo(30,c.height-24);x.lineTo(c.width-20,c.height-24);x.stroke();x.strokeStyle=col;x.beginPath();pts.slice(0,i+1).forEach((p,k)=>k?x.lineTo(X(p[0]),Y(p[1])):x.moveTo(X(p[0]),Y(p[1])));x.stroke();const p=pts[Math.min(i,pts.length-1)];x.fillStyle=col;x.fillRect(X(p[0])-3,Y(p[1])-3,6,6);
+  x.font="12px monospace";x.fillText("T+"+p[3].toFixed(1)+"s  alt "+Math.max(0,Math.round(p[1]))+" m  v "+Math.round(p[2])+" m/s"+(p[3]<9?"  [burn]":"  [coast]"),36,18);i+=2;if(i<pts.length+2)requestAnimationFrame(f);else tel.textContent="apogee "+Math.round(my)+" m, downrange "+Math.round(mx)+" m. (toy gravity-turn model; see projects/rocket-simulator.txt)"})();term.scrollTop=term.scrollHeight}
+function roadmap(){const L=[["C/C++","Python","JavaScript","SQL"],["DSA","ML basics","React","PostgreSQL / Redis"],["Competitive Prog.","CV & NLP","Three.js / GSAP","FastAPI"],["Rocket Sim","Vehicle Detection","Ahouba.com","Learning Path Gen"],["GenAI / RAG","MLOps","Scalable systems"]];
+ const E=[[0,0,1,0],[0,0,3,0],[0,1,1,1],[0,1,2,1],[0,2,1,2],[0,3,1,3],[1,0,2,0],[1,1,2,1],[1,2,2,2],[1,3,2,3],[2,0,3,0],[2,1,3,1],[2,2,3,2],[2,3,3,3],[3,3,4,0],[3,1,4,0],[2,1,4,1],[3,3,4,2],[3,0,4,2],[3,2,4,2]].filter(e=>e[0]+1===e[2]||e[0]+2===e[2]);
+ const w=720,h=360,pos=L.map((r,i)=>r.map((n,j)=>({n,x:(j+.5)*w/r.length,y:30+i*75})));let s=`<svg viewBox="0 0 ${w} ${h}" width="100%" style="max-width:${w}px" font-family="monospace" font-size="11">`;
+ E.forEach(([a,b,c,d])=>{const p=pos[a][b],q=pos[c][d];if(p&&q)s+=`<line x1="${p.x}" y1="${p.y+14}" x2="${q.x}" y2="${q.y-14}" style="stroke:var(--amb);opacity:.35"/>`});
+ pos.forEach((r,i)=>r.forEach(p=>{const g=i===4;s+=`<rect x="${p.x-62}" y="${p.y-14}" width="124" height="28" rx="3" style="fill:${g?"var(--amb)":"#000"};stroke:var(--amb)"/><text x="${p.x}" y="${p.y+4}" text-anchor="middle" style="fill:${g?"#000":"var(--fg)"}">${p.n}</text>`}));
+ s+="</svg>";const d=document.createElement("div");d.className="ln";d.style.overflowX="auto";d.innerHTML=s;out.append(d);print("Foundations at the top, goals (amber) at the bottom: see goals.txt.","dim")}
+async function gh(url){const r=await fetch(url,{headers:{Accept:"application/vnd.github+json"}});if(!r.ok)throw 0;return r.json()}
+const ghFail=()=>print("Couldn't reach the GitHub API from here (offline, rate-limited or blocked). Try: open github","err");
+const sudoMsg=()=>print("anant is not in the sudoers file. This incident will be reported.","err");
+Object.assign(CMDS,{
+theme(a){if(!a[0])return print("themes: "+Object.keys(THEMES).join(", ")+"\nusage: theme <name>");if(!setTheme(a[0]))err("theme: unknown theme '"+a[0]+"'");else print("theme set to "+a[0])},
+sound(a){sfx=a[0]==="on";print("keystroke sound "+(sfx?"on":"off")+" (usage: sound on|off)")},
+resume(){print("",""  ,[txtn("Resume: "),a$("resume.pdf","resume.pdf",1),txtn("  (works on the deployed site; the PDF ships in the folder)")])},
+mail(a){const s=encodeURIComponent("Hello Anant");location.href="mailto:anantxbth@gmail.com?subject="+s;print("opening your mail client for anantxbth@gmail.com ...")},
+fortune(){print(FORT[Math.random()*FORT.length|0])},
+cowsay(a){const m=a.join(" ")||"hire anant",l="-".repeat(m.length+2);print(` ${l}\n< ${m} >\n ${l}\n        \\   ^__^\n         \\  (oo)\\_______\n            (__)\\       )\\/\\\n                ||----w |\n                ||     ||`)},
+sudo(a){if(a.join(" ")!=="hire-me")return sudoMsg();print("[sudo] password for recruiter: ********\nverifying skills........ ok\nchecking culture fit.... ok\npermission granted. Sending offer to inbox...","amb");setTimeout(()=>CMDS.mail([]),1500)},
+matrix(){matrix()},launch(){launch()},roadmap(){roadmap()},
+play(a){if(a[0]==="space-game")game();else print("usage: play space-game")},
+mood(){const f=features(),p=score();print(`behaviour monitor (MLP 4-6-1, runs in your browser)\n  backspace ratio  ${f.bs.toFixed(2)}\n  fast-key ratio   ${f.fast.toFixed(2)}\n  error streak     ${f.streak}\n  total errors     ${f.total}\n  frustration p    ${p.toFixed(3)}  (GUI fallback fires above 0.85)`)},
+async repos(){print("fetching repos from GitHub ...","dim");try{const r=await gh("https://api.github.com/users/Mobx01/repos?sort=updated&per_page=8");if(!r.length)return print("no public repos found");r.forEach(x=>print("",""  ,[a$(x.name,x.html_url),txtn(`  ${x.language||"-"}  *${x.stargazers_count}  ${x.description||""}`)]))}catch(e){ghFail()}},
+async git(a){if(a[0]!=="log")return err("git: only 'git log' is supported");print("fetching recent activity ...","dim");try{const ev=await gh("https://api.github.com/users/Mobx01/events/public");let n=0;for(const e of ev){if(e.type!=="PushEvent")continue;for(const c of (e.payload.commits||[]).slice(0,2)){if(n++>=8)return;print(`${c.sha.slice(0,7)}  ${e.repo.name.split("/")[1]}  ${c.message.split("\n")[0]}`)}}if(!n)print("no recent public commits found")}catch(e){ghFail()}},
+open(a){const k=a[0],u=D.L[k]||(D.P[k]&&(D.P[k][3]||D.L.github));if(!u)return err("open: usage: open github|linkedin|leetcode|kaggle|<project>");window.open(u,"_blank","noopener");print("opening "+u)}});
+
+/* --- boot --- */
+setPs();
+(async()=>{const L=["[ ok ] mounting virtual file system","[ ok ] loading behaviour monitor (MLP 4-6-1)","[ ok ] starting 3D background"];
+ for(const l of L){print(l,"dim");await sleep(matchMedia("(prefers-reduced-motion:reduce)").matches?0:260)}
+ print("portfolio-sh 1.0  |  Anant Bhardwaj","amb b");
+ print("CS undergrad at IIIT Manipur. Type 'help' to start, or use the shortcuts below.","dim");
+ chips(["help","ls","cat about.txt","cd projects","neofetch","roadmap","launch","gui"]);inp.focus()})();
+</script>
+</body>
+</html>
