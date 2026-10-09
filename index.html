@@ -323,7 +323,7 @@ const sudoMsg=()=>print("anant is not in the sudoers file. This incident will be
 Object.assign(CMDS,{
 theme(a){if(!a[0])return print("themes: "+Object.keys(THEMES).join(", ")+"\nusage: theme <name>");if(!setTheme(a[0]))err("theme: unknown theme '"+a[0]+"'");else print("theme set to "+a[0])},
 sound(a){sfx=a[0]==="on";print("keystroke sound "+(sfx?"on":"off")+" (usage: sound on|off)")},
-resume(){print("",""  ,[txtn("Resume: "),a$("resume.pdf","resume.pdf",1),txtn("  (works on the deployed site; the PDF ships in the folder)")])},
+resume(){print("",""  ,[txtn("Resume: "),a$("resume.pdf","resume.pdf",1),txtn("  ( the PDF ships in the folder)")])},
 mail(a){const s=encodeURIComponent("Hello Anant");location.href="mailto:anantxbth@gmail.com?subject="+s;print("opening your mail client for anantxbth@gmail.com ...")},
 fortune(){print(FORT[Math.random()*FORT.length|0])},
 cowsay(a){const m=a.join(" ")||"hire anant",l="-".repeat(m.length+2);print(` ${l}\n< ${m} >\n ${l}\n        \\   ^__^\n         \\  (oo)\\_______\n            (__)\\       )\\/\\\n                ||----w |\n                ||     ||`)},
